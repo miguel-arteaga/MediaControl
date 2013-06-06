@@ -21,6 +21,7 @@ public class TestRobot {
 			robot.keyPress( KeyEvent.VK_K );
 			robot.keyPress( KeyEvent.VK_A );
 			robot.waitForIdle();
+			
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
