@@ -1,17 +1,13 @@
 package mx.mjkhajl.media.control.server.tray;
 
 import java.awt.AWTException;
-import java.awt.CheckboxMenuItem;
 import java.awt.Image;
-import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.net.URL;
 
@@ -20,6 +16,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import mx.mjkhajl.media.control.server.MediaControlServer;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -29,8 +28,18 @@ public class MediaControlTrayIconAWTImpl implements MediaControlTrayIcon{
 	
 	@Value("classpath:mx/mjkhajl/media/control/server/resources/img/bulb.gif")
 	private Resource imgIcon;
+	
 	@Value("Media control server")
 	private String helpMessage;
+	
+	@Value("Media Control Server\n\n\tAuthor: Mjkhajl\n\tE-mail: luismiguel.arteaga@gmail.com\n\n2013")
+	private String aboutMessage;
+	
+	@Autowired
+	private MediaControlServer mcServer; 
+	
+	private final SystemTray tray = SystemTray.getSystemTray();
+	private TrayIcon trayIcon;
 	
 	@Override
 	public void show() {
@@ -43,6 +52,14 @@ public class MediaControlTrayIconAWTImpl implements MediaControlTrayIcon{
 			}
 		});
 	}
+	
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+		tray.remove(trayIcon);
+		mcServer.stop();
+		System.exit(0);
+	}
 
 	private void createAndShowGUI() {
 		// Check the SystemTray support
@@ -50,32 +67,17 @@ public class MediaControlTrayIconAWTImpl implements MediaControlTrayIcon{
 			System.out.println("SystemTray is not supported");
 			return;
 		}
+		trayIcon = new TrayIcon( getImageIcon() );
+		trayIcon.setToolTip(helpMessage);
 		final PopupMenu popup = new PopupMenu();
-		final TrayIcon trayIcon = new TrayIcon( getImageIcon() );
-		final SystemTray tray = SystemTray.getSystemTray();
-
+		
 		// Create a popup menu components
-		MenuItem aboutItem = new MenuItem("About");
-		CheckboxMenuItem cb1 = new CheckboxMenuItem("Set auto size");
-		CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
-		Menu displayMenu = new Menu("Display");
-		MenuItem errorItem = new MenuItem("Error");
-		MenuItem warningItem = new MenuItem("Warning");
-		MenuItem infoItem = new MenuItem("Info");
-		MenuItem noneItem = new MenuItem("None");
-		MenuItem exitItem = new MenuItem("Exit");
+		final MenuItem aboutItem = new MenuItem("About");
+		final MenuItem exitItem = new MenuItem("Exit");
 
 		// Add components to popup menu
 		popup.add(aboutItem);
 		popup.addSeparator();
-		popup.add(cb1);
-		popup.add(cb2);
-		popup.addSeparator();
-		popup.add(displayMenu);
-		displayMenu.add(errorItem);
-		displayMenu.add(warningItem);
-		displayMenu.add(infoItem);
-		displayMenu.add(noneItem);
 		popup.add(exitItem);
 
 		trayIcon.setPopupMenu(popup);
@@ -87,83 +89,15 @@ public class MediaControlTrayIconAWTImpl implements MediaControlTrayIcon{
 			return;
 		}
 
-		trayIcon.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null,
-						"This dialog box is run from System Tray");
-			}
-		});
-
 		aboutItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null,
-						"This dialog box is run from the About menu item");
+				JOptionPane.showMessageDialog(null, aboutMessage );
 			}
 		});
-
-		cb1.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				int cb1Id = e.getStateChange();
-				if (cb1Id == ItemEvent.SELECTED) {
-					trayIcon.setImageAutoSize(true);
-				} else {
-					trayIcon.setImageAutoSize(false);
-				}
-			}
-		});
-
-		cb2.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				int cb2Id = e.getStateChange();
-				if (cb2Id == ItemEvent.SELECTED) {
-					trayIcon.setToolTip("Sun TrayIcon");
-				} else {
-					trayIcon.setToolTip(null);
-				}
-			}
-		});
-
-		ActionListener listener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MenuItem item = (MenuItem) e.getSource();
-				// TrayIcon.MessageType type = null;
-				System.out.println(item.getLabel());
-				if ("Error".equals(item.getLabel())) {
-					// type = TrayIcon.MessageType.ERROR;
-					trayIcon.displayMessage("Sun TrayIcon Demo",
-							"This is an error message",
-							TrayIcon.MessageType.ERROR);
-
-				} else if ("Warning".equals(item.getLabel())) {
-					// type = TrayIcon.MessageType.WARNING;
-					trayIcon.displayMessage("Sun TrayIcon Demo",
-							"This is a warning message",
-							TrayIcon.MessageType.WARNING);
-
-				} else if ("Info".equals(item.getLabel())) {
-					// type = TrayIcon.MessageType.INFO;
-					trayIcon.displayMessage("Sun TrayIcon Demo",
-							"This is an info message",
-							TrayIcon.MessageType.INFO);
-
-				} else if ("None".equals(item.getLabel())) {
-					// type = TrayIcon.MessageType.NONE;
-					trayIcon.displayMessage("Sun TrayIcon Demo",
-							"This is an ordinary message",
-							TrayIcon.MessageType.NONE);
-				}
-			}
-		};
-
-		errorItem.addActionListener(listener);
-		warningItem.addActionListener(listener);
-		infoItem.addActionListener(listener);
-		noneItem.addActionListener(listener);
 
 		exitItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				tray.remove(trayIcon);
-				System.exit(0);
+				destroy();
 			}
 		});
 	}
@@ -172,7 +106,7 @@ public class MediaControlTrayIconAWTImpl implements MediaControlTrayIcon{
 	protected Image getImageIcon() {
 		try {
 			URL imageURL = imgIcon.getURL();
-			return (new ImageIcon(imageURL, helpMessage)).getImage();
+			return (new ImageIcon(imageURL)).getImage();
 		} catch (IOException e) {
 			throw new RuntimeException( "Error loading image icon: " + imgIcon, e );
 		}

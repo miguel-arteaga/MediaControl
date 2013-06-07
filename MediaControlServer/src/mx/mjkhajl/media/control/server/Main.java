@@ -16,5 +16,7 @@ public class Main {
 		
 		trayIcon.show();
 		server.start();
+		
 	}
+
 }
