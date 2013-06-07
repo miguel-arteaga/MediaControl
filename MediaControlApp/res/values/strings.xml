@@ -7,5 +7,7 @@
     <string name="center_button"></string>
     <string name="right_button"></string>
     <string name="left_button"></string>
+    <string name="touch_pannel"></string>
+    <string name="scroll_panel"></string>
 
 </resources>
