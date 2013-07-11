@@ -1,4 +1,4 @@
-package mx.mjkhajl.media.control.server.tray;
+package mx.mjkhajl.media.control.server.ui;
 
 public interface MediaControlTrayIcon {
 	

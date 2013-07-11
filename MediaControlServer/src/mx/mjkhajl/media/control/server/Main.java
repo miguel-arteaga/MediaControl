@@ -1,6 +1,6 @@
 package mx.mjkhajl.media.control.server;
 
-import mx.mjkhajl.media.control.server.tray.MediaControlTrayIcon;
+import mx.mjkhajl.media.control.server.ui.MediaControlTrayIcon;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
